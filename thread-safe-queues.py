@@ -133,6 +133,21 @@ class View:
                 products = reversed(list(self.buffer.queue))
             case _:
                 title = products = ""
+    
+        rows = [Panel(f"[bold]{title}:[/] {', '.join(products)}", width=82)]
+        pairs = zip_longest(self.producers, self.consumers)
+        for i, (producer, consumer) in enumerate(pairs, 1):
+            left_panel = self.panel(producer, f"Producer {i}")
+            right_panel = self.panel(consumer, f"Consumer {i}")
+            rows.append(Columns([left_panel, right_panel], width=40))
+        return Group(*rows)
+
+    def panel(self, worker, title):
+        if worker is None:
+            return ""
+        padding = " " * int(29 / 100 * worker.progress)
+        align = Align(padding + worker.state, align="left", vertical="middle")
+        return Panel(align, height=5, title=title)
 
 def main(args):
     buffer = QUEUE_TYPES[args.queue]()
